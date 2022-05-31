@@ -1,5 +1,6 @@
 module DRRs
 
-# Write your package code here.
+export read_dicom
+include("io.jl")
 
 end
