@@ -46,4 +46,4 @@ function get_rays(camera::Camera, detector::Detector)
     return [Ray(camera.center, direction) for direction in directions]
 end
 
-trace(ray::Ray, t::Float64) = ray.origin + ray.direction * t
+trace(t::Float64; ray::Ray) = ray.origin + ray.direction * t
