@@ -31,3 +31,17 @@ function make_plane(detector::Detector)
 end
 
 findz(x, y, a, b, c, d) = (d - a * x - b * y) / c
+
+"""
+    Ray
+"""
+mutable struct Ray
+    origin::SVector{3,Float64}
+    direction::SVector{3,Float64}
+end
+
+function get_rays(camera::Camera, detector::Detector)
+    return [Ray(camera.center, pixel - camera.center) for pixel in make_plane(detector)]
+end
+
+trace(ray::Ray, t::Float64) = ray.origin + ray.direction * t

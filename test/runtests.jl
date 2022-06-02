@@ -8,6 +8,8 @@ using Test
     @show ΔX, ΔY, ΔZ
 
     @info "Testing camera submodule"
+    camera = Camera([0, 0, 0])
     detector = Detector([2, 1, 0.2], [-1, 0, 1], 101, 101, 0.4, 0.4)
     @test size(make_plane(detector)) == (101, 101)
+    @test size(get_rays(camera, detector)) == (101, 101)
 end
