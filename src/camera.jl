@@ -1,3 +1,4 @@
+using LinearAlgebra
 using StaticArrays
 
 import Base: product
@@ -41,7 +42,8 @@ mutable struct Ray
 end
 
 function get_rays(camera::Camera, detector::Detector)
-    return [Ray(camera.center, pixel - camera.center) for pixel in make_plane(detector)]
+    directions = make_plane(detector) .|> pixel -> (pixel - camera.center |> normalize)
+    return [Ray(camera.center, direction) for direction in directions]
 end
 
 trace(ray::Ray, t::Float64) = ray.origin + ray.direction * t
