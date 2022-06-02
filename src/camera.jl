@@ -23,11 +23,11 @@ mutable struct Detector
 end
 
 function make_plane(detector::Detector)
-    d = d = detector.center' * detector.normal
-    xs = (-detector.height÷2:1:detector.height÷2) * detector.Δx
-    ys = (-detector.width÷2:1:detector.width÷2) * detector.Δy
+    d = detector.center' * normalize(detector.normal)
+    xs = ((-detector.height÷2:1:detector.height÷2) .* detector.Δx) .+ detector.center[1]
+    ys = ((-detector.width÷2:1:detector.width÷2) * detector.Δy) .+ detector.center[2]
     xys = product(xs, ys)
-    zs = [findz(xy..., detector.normal..., d) for xy in xys]
+    zs = [findz(xy..., normalize(detector.normal)..., d) for xy in xys]
     return [SVector(xy..., z) for (xy, z) in zip(xys, zs)]
 end
 
@@ -42,7 +42,7 @@ mutable struct Ray
 end
 
 function get_rays(camera::Camera, detector::Detector)
-    directions = make_plane(detector) .|> pixel -> (pixel - camera.center |> normalize)
+    directions = make_plane(detector) .|> pixel -> pixel - camera.center
     return [Ray(camera.center, direction) for direction in directions]
 end
 
