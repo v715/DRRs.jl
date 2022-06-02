@@ -46,7 +46,7 @@ function get_colors(volume, xidx, yidx, zidx)
 end
 
 
-function trilinear(x::Float64, y::Float64, z::Float64; volume, xs, ys, zs)
+function trilinear(x::Float64, y::Float64, z::Float64; volume::AbstractArray, xs::StepRangeLen, ys::StepRangeLen, zs::StepRangeLen)
 
     # Find the indices of the lower left corner of the cube we're inside of
     xidx = findlast(xs .<= x)

@@ -1,4 +1,4 @@
-function sample(x::Float64, y::Float64, z::Float64; volume, xs, ys, zs)
+function sample(x::Float64, y::Float64, z::Float64; volume::AbstractArray, xs::StepRangeLen, ys::StepRangeLen, zs::StepRangeLen)
     # Find the indices of the lower left corner of the cube we're inside of
     xidx = findlast(xs .<= x)
     yidx = findlast(ys .<= y)
