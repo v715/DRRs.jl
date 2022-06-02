@@ -42,7 +42,7 @@ function get_colors(volume, xidx, yidx, zidx)
     c101 = volume[xidx+1, yidx, zidx+1]
     c110 = volume[xidx+1, yidx+1, zidx]
     c111 = volume[xidx+1, yidx+1, zidx+1]
-    return SVector([c000, c100, c010, c110, c001, c101, c110, c111])
+    return SVector{8}([c000 c100 c010 c110 c001 c101 c110 c111])
 end
 
 
@@ -70,7 +70,7 @@ function trilinear(x::Float64, y::Float64, z::Float64; volume::AbstractArray, xs
     c = get_colors(volume, xidx, yidx, zidx)
 
     # Get the component vector
-    p = SVector([1; x; y; z; x * y; x * z; y * z; x * y * z])
+    p = SVector{8}([1 x y z x*y x*z y*z x*y*z])
 
     return p' * Minv * c
 
