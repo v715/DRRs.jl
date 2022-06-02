@@ -21,9 +21,9 @@ using Test
     @test inv(M) ≈ Minv
 
     @info "Testing DRR generator..."
-    drr = make_drr(volume, ΔX, ΔY, ΔZ, detector, camera, 0.1, trilinear)
+    drr = DRR(volume, ΔX, ΔY, ΔZ, detector, camera, 0.1, trilinear)
     @test size(drr) == (101, 101)
-    drr = make_drr(volume, ΔX, ΔY, ΔZ, detector, camera, 0.1, sample)
+    drr = DRR(volume, ΔX, ΔY, ΔZ, detector, camera, 0.1, sample)
     @test size(drr) == (101, 101)
 
 end

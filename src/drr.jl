@@ -1,4 +1,4 @@
-function make_drr(volume, ΔX, ΔY, ΔZ, detector, camera, spacing, sampling_function)
+function DRR(volume, ΔX, ΔY, ΔZ, detector, camera, spacing, sampling_function)
 
     # Make the rays in the projector
     projector = get_rays(camera, detector)
