@@ -14,4 +14,7 @@ include("sampling/trilinear.jl")
 export sample
 include("sampling/sampler.jl")
 
+export make_drr
+include("drr.jl")
+
 end
