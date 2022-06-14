@@ -126,3 +126,37 @@ function plot(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
     ))
     plot(traces, layout)
 end
+
+
+"""
+plot_drr
+
+    Plot the geometry and the resulting DRR.
+    NOTE: Very slow.
+"""
+function plot_drr(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
+
+    fig = make_subplots(
+        rows=1, cols=2,
+        specs=[Spec(kind="scene") Spec(kind="xy")]
+    )
+
+    traces = [plot_rays(camera, detector)..., plot_ct(vol, ΔX, ΔY, ΔZ; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    layout = Layout(scene=attr(
+        xaxis=attr(range=[-500, 1100]),
+        yaxis=attr(range=[-500, 1100]),
+        zaxis=attr(range=[-500, 1100]),
+        aspectratio=(x=1, y=1, z=1)
+    ))
+    for trace in traces
+        add_trace!(fig, trace, row=1, col=1)
+    end
+
+    p = heatmap(z=DRR(vol, ΔX, ΔY, ΔZ, detector, camera, 0.1, trilinear), colorscale="Greys")
+    add_trace!(fig, p, row=1, col=2)
+
+    relayout!(fig)
+    relayout!(layout)
+    fig
+
+end
