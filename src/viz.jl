@@ -42,9 +42,9 @@ function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     ys = 0:ct.ΔY:(ny-1)*ct.ΔY
     zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
     return [
-        get_slice_x(x; ct.volume, xs, ys, zs, ctkwargs...),
-        get_slice_y(y; ct.volume, xs, ys, zs, ctkwargs...),
-        get_slice_z(z; ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_x(x; vol=ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_y(y; vol=ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_z(z; vol=ct.volume, xs, ys, zs, ctkwargs...),
     ]
 end
 
@@ -116,7 +116,7 @@ plot(ct::CT, camera::Camera, detector::Detector)
 
     Overload the plot function to render the projector geometry.
 """
-function plot(ct::CT, camera::Camera, detector::Detector)
+function plot(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
     traces = [plot_rays(camera, detector)..., plot_ct(ct; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
@@ -134,14 +134,14 @@ plot_drr
     Plot the geometry and the resulting DRR.
     NOTE: Very slow.
 """
-function plot_drr(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
+function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
 
     fig = make_subplots(
         rows=1, cols=2,
         specs=[Spec(kind="scene") Spec(kind="xy")]
     )
 
-    traces = [plot_rays(camera, detector)..., plot_ct(vol, ΔX, ΔY, ΔZ; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    traces = [plot_rays(camera, detector)..., plot_ct(ct::CT; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
         yaxis=attr(range=[-500, 1100]),
@@ -152,7 +152,7 @@ function plot_drr(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
         add_trace!(fig, trace, row=1, col=1)
     end
 
-    p = heatmap(z=DRR(vol, ΔX, ΔY, ΔZ, detector, camera, 0.1, trilinear), colorscale="Greys")
+    p = heatmap(z=DRR(ct, detector, camera, 0.1, trilinear), colorscale="Greys")
     add_trace!(fig, p, row=1, col=2)
 
     relayout!(fig)
