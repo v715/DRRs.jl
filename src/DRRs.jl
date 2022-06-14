@@ -1,7 +1,7 @@
 module DRRs
 
 # Utilities
-export read_dicom
+export CT, read_dicom
 include("io.jl")
 
 export Camera, Detector, make_plane, get_rays, trace
