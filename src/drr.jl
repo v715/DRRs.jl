@@ -4,10 +4,10 @@ function DRR(ct::CT, detector::Detector, camera::Camera, spacing::Float64, sampl
     projector = get_rays(camera, detector)
 
     # Get the spatial dimensions of the volume
-    nx, ny, nz = size(CT.volume)
-    xs = 0:CT.ΔX:(nx-1)*CT.ΔX
-    ys = 0:CT.ΔY:(ny-1)*CT.ΔY
-    zs = 0:CT.ΔZ:(nz-1)*CT.ΔZ
+    nx, ny, nz = size(ct.volume)
+    xs = 0:ct.ΔX:(nx-1)*ct.ΔX
+    ys = 0:ct.ΔY:(ny-1)*ct.ΔY
+    zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
 
     # Trace rays through the voxel grid
     t = 0:spacing:1

@@ -37,14 +37,14 @@ plot_ct
 """
 function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     # Get the coordinate spacings
-    nx, ny, nz = size(CT.volume)
-    xs = 0:CT.ΔX:(nx-1)*CT.ΔX
-    ys = 0:CT.ΔY:(ny-1)*CT.ΔY
-    zs = 0:CT.ΔZ:(nz-1)*CT.ΔZ
+    nx, ny, nz = size(ct.volume)
+    xs = 0:ct.ΔX:(nx-1)*ct.ΔX
+    ys = 0:ct.ΔY:(ny-1)*ct.ΔY
+    zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
     return [
-        get_slice_x(x; CT.volume, xs, ys, zs, ctkwargs...),
-        get_slice_y(y; CT.volume, xs, ys, zs, ctkwargs...),
-        get_slice_z(z; CT.volume, xs, ys, zs, ctkwargs...),
+        get_slice_x(x; ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_y(y; ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_z(z; ct.volume, xs, ys, zs, ctkwargs...),
     ]
 end
 
