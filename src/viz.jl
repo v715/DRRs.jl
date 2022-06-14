@@ -1,5 +1,8 @@
 using PlotlyJS
 
+import PlotlyJS: plot
+
+
 """
 get_slice_{x,y,z}
 
@@ -105,4 +108,21 @@ function plot_rays(camera::Camera, detector::Detector)
         )
     end
     return [plot_ray(ray) for ray in get_rays(camera, detector)[1:20:201, 1:20:201]][:]
+end
+
+
+"""
+plot(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
+
+    Overload the plot function to render the projector geometry.
+"""
+function plot(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
+    traces = [plot_rays(camera, detector)..., plot_ct(vol, ΔX, ΔY, ΔZ; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    layout = Layout(scene=attr(
+        xaxis=attr(range=[-500, 1100]),
+        yaxis=attr(range=[-500, 1100]),
+        zaxis=attr(range=[-500, 1100]),
+        aspectratio=(x=1, y=1, z=1)
+    ))
+    plot(traces, layout)
 end
