@@ -17,4 +17,8 @@ include("sampling/sampler.jl")
 export DRR
 include("drr.jl")
 
+# Visualization
+export plot, plot_drr
+include("viz.jl")
+
 end
