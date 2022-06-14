@@ -35,16 +35,16 @@ plot_ct
         Make a Plotly trace for the CT volume.
         `ctkwargs...` is a dictionary of keyword arguments to pass to the isosurface function.
 """
-function plot_ct(vol, ΔX, ΔY, ΔZ; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
+function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     # Get the coordinate spacings
-    nx, ny, nz = size(vol)
-    xs = 0:ΔX:(nx-1)*ΔX
-    ys = 0:ΔY:(ny-1)*ΔY
-    zs = 0:ΔZ:(nz-1)*ΔZ
+    nx, ny, nz = size(CT.volume)
+    xs = 0:CT.ΔX:(nx-1)*CT.ΔX
+    ys = 0:CT.ΔY:(ny-1)*CT.ΔY
+    zs = 0:CT.ΔZ:(nz-1)*CT.ΔZ
     return [
-        get_slice_x(x; vol, xs, ys, zs, ctkwargs...),
-        get_slice_y(y; vol, xs, ys, zs, ctkwargs...),
-        get_slice_z(z; vol, xs, ys, zs, ctkwargs...),
+        get_slice_x(x; CT.volume, xs, ys, zs, ctkwargs...),
+        get_slice_y(y; CT.volume, xs, ys, zs, ctkwargs...),
+        get_slice_z(z; CT.volume, xs, ys, zs, ctkwargs...),
     ]
 end
 
@@ -112,12 +112,12 @@ end
 
 
 """
-plot(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
+plot(ct::CT, camera::Camera, detector::Detector)
 
     Overload the plot function to render the projector geometry.
 """
-function plot(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
-    traces = [plot_rays(camera, detector)..., plot_ct(vol, ΔX, ΔY, ΔZ; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+function plot(ct::CT, camera::Camera, detector::Detector)
+    traces = [plot_rays(camera, detector)..., plot_ct(ct; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
         yaxis=attr(range=[-500, 1100]),
@@ -158,5 +158,4 @@ function plot_drr(vol, ΔX, ΔY, ΔZ, camera::Camera, detector::Detector)
     relayout!(fig)
     relayout!(layout)
     fig
-
 end
