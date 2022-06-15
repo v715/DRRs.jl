@@ -72,8 +72,8 @@ plot_detector
 
     Make a Plotly trace for the detector plane with a 3D mesh.
 """
-function plot_detector(detector::Detector)
-    plane = make_plane(detector)
+function plot_detector(camera::Camera, detector::Detector)
+    plane = make_plane(camera, detector)
     pts = plane[[1, detector.height, end - detector.height + 1, end]]
     return mesh3d(
         name="Detector",
@@ -117,7 +117,12 @@ plot(ct::CT, camera::Camera, detector::Detector)
     Overload the plot function to render the projector geometry.
 """
 function plot(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
-    traces = [plot_rays(camera, detector)..., plot_ct(ct; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    traces = [
+        plot_rays(camera, detector)...,
+        plot_ct(ct; ctkwargs...)...,
+        plot_camera(camera),
+        plot_detector(camera, detector)
+    ]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
         yaxis=attr(range=[-500, 1100]),
@@ -141,7 +146,13 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
         specs=[Spec(kind="scene") Spec(kind="xy")]
     )
 
-    traces = [plot_rays(camera, detector)..., plot_ct(ct::CT; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    # Plot the 3D geometric setup
+    traces = [
+        plot_rays(camera, detector)...,
+        plot_ct(ct; ctkwargs...)...,
+        plot_camera(camera),
+        plot_detector(camera, detector)
+    ]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
         yaxis=attr(range=[-500, 1100]),
@@ -152,6 +163,7 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
         add_trace!(fig, trace, row=1, col=1)
     end
 
+    # Plot the DRR
     p = heatmap(z=DRR(ct, detector, camera, 0.1, trilinear), colorscale="Greys")
     add_trace!(fig, p, row=1, col=2)
 

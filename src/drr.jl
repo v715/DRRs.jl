@@ -1,7 +1,7 @@
 function DRR(ct::CT, detector::Detector, camera::Camera, spacing::Float64, sampling_function)
 
     # Make the rays in the projector
-    projector = get_rays(camera, detector)
+    projector = make_xrays(camera, detector)
 
     # Get the spatial dimensions of the volume
     nx, ny, nz = size(ct.volume)
