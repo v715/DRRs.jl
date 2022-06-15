@@ -4,10 +4,10 @@ import PlotlyJS: plot
 
 
 """
-get_slice_{x,y,z}
+    get_slice_{x,y,z}
 
-    Get a slice of a CT volume along the x (coronal), y (sagittal) or z (transverse) axis.
-    The slice is plotted as an isosurface in Plotly.
+Get a slice of a CT volume along the x (coronal), y (sagittal) or z (transverse) axis. 
+The slice is plotted as an isosurface in Plotly.
 """
 function get_slice_x(i::Int64; vol, xs, ys, zs, ctkwargs...)
     X, Y, Z = mgrid([xs[i]], ys, zs)
@@ -30,10 +30,10 @@ function get_slice_z(i::Int64; vol, xs, ys, zs, ctkwargs...)
 end
 
 """
-plot_ct
+    plot_ct
 
-        Make a Plotly trace for the CT volume.
-        `ctkwargs...` is a dictionary of keyword arguments to pass to the isosurface function.
+ Make a Plotly trace for the CT volume.
+`ctkwargs...` is a dictionary of keyword arguments to pass to the isosurface function.
 """
 function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     # Get the coordinate spacings
@@ -50,9 +50,9 @@ end
 
 
 """
-plot_camera
+    plot_camera
 
-    Make a Plotly trace for the camera center a single point in a 3D scatterplot.
+Make a Plotly trace for the camera center a single point in a 3D scatterplot.
 """
 function plot_camera(camera::Camera)
     return scatter(
@@ -68,14 +68,19 @@ end
 
 
 """
-plot_detector
+    plot_detector
 
-    Make a Plotly trace for the detector plane with a 3D mesh.
+Make two traces: one for the detector plane with a 3D mesh, and another
+for the rays emanating from the camera. The rays are created using multiple
+3D lineplots. The rays are subsampled (every 10th ray) to reduce overhead.
 """
-function plot_detector(detector::Detector)
-    plane = make_plane(detector)
-    pts = plane[[1, detector.height, end - detector.height + 1, end]]
-    return mesh3d(
+function plot_detector(camera::Camera, detector::Detector; skips::Int64=20)
+
+    # Make the detector plane
+    rays = make_xrays(camera, detector)
+    pts = rays[[1, detector.height, end - detector.height + 1, end]]
+    pts = [pt.target for pt in pts]
+    plane = mesh3d(
         name="Detector",
         x=[pt[1] for pt in pts],
         y=[pt[2] for pt in pts],
@@ -84,22 +89,14 @@ function plot_detector(detector::Detector)
         j=[1, 3],
         k=[3, 2],
     )
-end
 
-
-"""
-plot_rays
-
-    Make a trace for the rays using multiple 3D lineplots.
-    The rays are subsampled (every 10th ray) to reduce overhead.
-"""
-function plot_rays(camera::Camera, detector::Detector)
+    # Make the rays
     function plot_ray(ray::DRRs.Ray)
-        origin, dest = ray.origin, ray.direction
+        origin, target = ray.origin, ray.target
         return scatter(
-            x=[origin[1], dest[1]],
-            y=[origin[2], dest[2]],
-            z=[origin[3], dest[3]],
+            x=[origin[1], target[1]],
+            y=[origin[2], target[2]],
+            z=[origin[3], target[3]],
             type="scatter3d",
             mode="lines",
             line=attr(color="darkblue", width=2),
@@ -107,17 +104,24 @@ function plot_rays(camera::Camera, detector::Detector)
             showlegend=false,
         )
     end
-    return [plot_ray(ray) for ray in get_rays(camera, detector)[1:20:detector.height, 1:20:detector.width]][:]
+    rays = [plot_ray(ray) for ray in rays[1:skips:detector.height, 1:skips:detector.width]][:]
+
+    return [plane, rays...]
+
 end
 
 
 """
-plot(ct::CT, camera::Camera, detector::Detector)
+    plot(ct::CT, camera::Camera, detector::Detector)
 
-    Overload the plot function to render the projector geometry.
+Overload the plot function to render the projector geometry.
 """
 function plot(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
-    traces = [plot_rays(camera, detector)..., plot_ct(ct; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    traces = [
+        plot_ct(ct; ctkwargs...)...,
+        plot_camera(camera),
+        plot_detector(camera, detector)...,
+    ]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
         yaxis=attr(range=[-500, 1100]),
@@ -129,10 +133,10 @@ end
 
 
 """
-plot_drr
+    plot_drr
 
-    Plot the geometry and the resulting DRR.
-    NOTE: Very slow.
+Plot the geometry and the resulting DRR. 
+NOTE: Very slow.
 """
 function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
 
@@ -141,7 +145,12 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
         specs=[Spec(kind="scene") Spec(kind="xy")]
     )
 
-    traces = [plot_rays(camera, detector)..., plot_ct(ct::CT; ctkwargs...)..., plot_camera(camera), plot_detector(detector)]
+    # Plot the 3D geometric setup
+    traces = [
+        plot_ct(ct; ctkwargs...)...,
+        plot_camera(camera),
+        plot_detector(camera, detector)...,
+    ]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
         yaxis=attr(range=[-500, 1100]),
@@ -152,6 +161,7 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
         add_trace!(fig, trace, row=1, col=1)
     end
 
+    # Plot the DRR
     p = heatmap(z=DRR(ct, detector, camera, 0.1, trilinear), colorscale="Greys")
     add_trace!(fig, p, row=1, col=2)
 

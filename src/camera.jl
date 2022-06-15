@@ -7,43 +7,52 @@ import Base: product
     Camera
 """
 mutable struct Camera
-    center::SVector{3,Float64}
+    center::MVector{3,Float64}
 end
 
 """
     Detector Plane
 """
 mutable struct Detector
-    center::SVector{3,Float64}
-    normal::SVector{3,Float64}
+    center::MVector{3,Float64}
     height::Int64
     width::Int64
     Δx::Float64
     Δy::Float64
 end
 
-function make_plane(detector::Detector)
-    d = detector.center' * normalize(detector.normal)
-    xs = ((-detector.height÷2:1:detector.height÷2) .* detector.Δx) .+ detector.center[1]
-    ys = ((-detector.width÷2:1:detector.width÷2) * detector.Δy) .+ detector.center[2]
-    xys = product(xs, ys)
-    zs = [findz(xy..., normalize(detector.normal)..., d) for xy in xys]
-    return [SVector(xy..., z) for (xy, z) in zip(xys, zs)]
-end
-
-findz(x, y, a, b, c, d) = (d - a * x - b * y) / c
-
 """
     Ray
 """
 mutable struct Ray
     origin::SVector{3,Float64}
-    direction::SVector{3,Float64}
+    target::SVector{3,Float64}
 end
 
-function get_rays(camera::Camera, detector::Detector)
-    directions = make_plane(detector) .|> pixel -> pixel - camera.center
-    return [Ray(camera.center, direction) for direction in directions]
-end
+trace(t::Float64; ray::Ray) = ray.origin + (ray.target - ray.origin) * t
 
-trace(t::Float64; ray::Ray) = ray.origin + ray.direction * t
+"""
+    make_xrays
+
+Given a camera and detector, construct the rays eminating from the camera center
+and the detector plane which they hit.
+"""
+function make_xrays(camera::Camera, detector::Detector)
+
+    # Get the detector plane normal vector
+    n̂ = camera.center - detector.center |> normalize
+    u, v, w = get_basis(n̂)
+    @assert w ≈ n̂
+
+    # Construct the detector plane
+    t = (-detector.height÷2:1:detector.height÷2) .* detector.Δx
+    s = (-detector.width÷2:1:detector.width÷2) * detector.Δy
+    get_coord(u, v, coef) = (coef .* (u, v)) |> sum |> x -> x + detector.center
+    plane = [get_coord(u, v, coef) for coef in product(t, s)]
+
+    # Get the rays
+    rays = [Ray(camera.center, target) for target in plane]
+
+    return rays
+
+end
