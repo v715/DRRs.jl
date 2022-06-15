@@ -133,12 +133,12 @@ end
 
 
 """
-    plot_drr
+    plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{Float64}; ctkwargs...)
 
 Plot the geometry and the resulting DRR. 
 NOTE: Very slow.
 """
-function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
+function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{Float64}; ctkwargs...)
 
     fig = make_subplots(
         rows=1, cols=2,
@@ -162,7 +162,7 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
     end
 
     # Plot the DRR
-    p = heatmap(z=DRR(ct, detector, camera, 0.1, trilinear), colorscale="Greys")
+    p = heatmap(z=drr, colorscale="Greys")
     add_trace!(fig, p, row=1, col=2)
 
     relayout!(fig)
