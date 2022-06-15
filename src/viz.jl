@@ -70,12 +70,17 @@ end
 """
 plot_detector
 
-    Make a Plotly trace for the detector plane with a 3D mesh.
+    Make two traces: one for the detector plane with a 3D mesh, and another
+    for the rays emanating from the camera. The rays are created using multiple
+    3D lineplots. The rays are subsampled (every 10th ray) to reduce overhead.
 """
-function plot_detector(camera::Camera, detector::Detector)
-    plane = make_plane(camera, detector)
-    pts = plane[[1, detector.height, end - detector.height + 1, end]]
-    return mesh3d(
+function plot_detector(camera::Camera, detector::Detector; skips::Int64=20)
+
+    # Make the detector plane
+    rays = make_xrays(camera, detector)
+    pts = rays[[1, detector.height, end - detector.height + 1, end]]
+    pts = [pt.target for pt in pts]
+    plane = mesh3d(
         name="Detector",
         x=[pt[1] for pt in pts],
         y=[pt[2] for pt in pts],
@@ -84,22 +89,14 @@ function plot_detector(camera::Camera, detector::Detector)
         j=[1, 3],
         k=[3, 2],
     )
-end
 
-
-"""
-plot_rays
-
-    Make a trace for the rays using multiple 3D lineplots.
-    The rays are subsampled (every 10th ray) to reduce overhead.
-"""
-function plot_rays(camera::Camera, detector::Detector)
+    # Make the rays
     function plot_ray(ray::DRRs.Ray)
-        origin, dest = ray.origin, ray.direction
+        origin, target = ray.origin, ray.target
         return scatter(
-            x=[origin[1], dest[1]],
-            y=[origin[2], dest[2]],
-            z=[origin[3], dest[3]],
+            x=[origin[1], target[1]],
+            y=[origin[2], target[2]],
+            z=[origin[3], target[3]],
             type="scatter3d",
             mode="lines",
             line=attr(color="darkblue", width=2),
@@ -107,7 +104,10 @@ function plot_rays(camera::Camera, detector::Detector)
             showlegend=false,
         )
     end
-    return [plot_ray(ray) for ray in get_rays(camera, detector)[1:20:detector.height, 1:20:detector.width]][:]
+    rays = [plot_ray(ray) for ray in rays[1:skips:detector.height, 1:skips:detector.width]][:]
+
+    return [plane, rays...]
+
 end
 
 
@@ -118,10 +118,9 @@ plot(ct::CT, camera::Camera, detector::Detector)
 """
 function plot(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
     traces = [
-        plot_rays(camera, detector)...,
         plot_ct(ct; ctkwargs...)...,
         plot_camera(camera),
-        plot_detector(camera, detector)
+        plot_detector(camera, detector)...,
     ]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
@@ -148,10 +147,9 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
 
     # Plot the 3D geometric setup
     traces = [
-        plot_rays(camera, detector)...,
         plot_ct(ct; ctkwargs...)...,
         plot_camera(camera),
-        plot_detector(camera, detector)
+        plot_detector(camera, detector)...,
     ]
     layout = Layout(scene=attr(
         xaxis=attr(range=[-500, 1100]),
