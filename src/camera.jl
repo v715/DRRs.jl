@@ -7,15 +7,15 @@ import Base: product
     Camera
 """
 mutable struct Camera
-    center::SVector{3,Float64}
+    center::MVector{3,Float64}
 end
 
 """
     Detector Plane
 """
 mutable struct Detector
-    center::SVector{3,Float64}
-    normal::SVector{3,Float64}
+    center::MVector{3,Float64}
+    normal::MVector{3,Float64}
     height::Int64
     width::Int64
     Δx::Float64
