@@ -26,4 +26,8 @@ using Test
     drr = DRR(ct, detector, camera, 0.1, sample)
     @test size(drr) == (101, 101)
 
+    @info "Testing DRR visualization..."
+    # @test plot(ct, camera, detector)
+    # @test plot_drr(ct, camera, detector)
+
 end
