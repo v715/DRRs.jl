@@ -1,5 +1,14 @@
 using DICOM
 
+
+struct CT
+    volume::Array{T,3} where {T<:Real}
+    ΔX::Float64
+    ΔY::Float64
+    ΔZ::Float64
+end
+
+
 function read_dicom(path::String)
 
     dcm_data_array = dcmdir_parse(path)
@@ -22,6 +31,6 @@ function read_dicom(path::String)
     ΔZ = diff(Zs)
     ΔZ = all(z ≈ ΔZ[1] for z in ΔZ) ? ΔZ[1] : ΔZ
 
-    return volume, ΔX, ΔY, ΔZ
+    return CT(volume, ΔX, ΔY, ΔZ)
 
 end

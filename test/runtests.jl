@@ -3,9 +3,9 @@ using Test
 
 @testset "DRRs.jl" begin
     @info "Testing I/O submodule..."
-    volume, ΔX, ΔY, ΔZ = read_dicom("../data/cxr")
-    @test size(volume) == (512, 512, 133)
-    @show ΔX, ΔY, ΔZ
+    ct = read_dicom("../data/cxr")
+    @test size(ct.volume) == (512, 512, 133)
+    @show ct.ΔX, ct.ΔY, ct.ΔZ
 
     @info "Testing camera submodule..."
     camera = Camera([0, 0, 0])
@@ -21,9 +21,13 @@ using Test
     @test inv(M) ≈ Minv
 
     @info "Testing DRR generator..."
-    drr = DRR(volume, ΔX, ΔY, ΔZ, detector, camera, 0.1, trilinear)
+    drr = DRR(ct, detector, camera, 0.1, trilinear)
     @test size(drr) == (101, 101)
-    drr = DRR(volume, ΔX, ΔY, ΔZ, detector, camera, 0.1, sample)
+    drr = DRR(ct, detector, camera, 0.1, sample)
     @test size(drr) == (101, 101)
+
+    @info "Testing DRR visualization..."
+    # @test plot(ct, camera, detector)
+    # @test plot_drr(ct, camera, detector)
 
 end

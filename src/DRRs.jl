@@ -1,7 +1,7 @@
 module DRRs
 
 # Utilities
-export read_dicom
+export CT, read_dicom
 include("io.jl")
 
 export Camera, Detector, make_plane, get_rays, trace
@@ -16,5 +16,9 @@ include("sampling/sampler.jl")
 
 export DRR
 include("drr.jl")
+
+# Visualization
+export plot, plot_drr
+include("viz.jl")
 
 end

@@ -1,17 +1,17 @@
-function DRR(volume, ΔX, ΔY, ΔZ, detector, camera, spacing, sampling_function)
+function DRR(ct::CT, detector::Detector, camera::Camera, spacing::Float64, sampling_function)
 
     # Make the rays in the projector
     projector = get_rays(camera, detector)
 
     # Get the spatial dimensions of the volume
-    nx, ny, nz = size(volume)
-    xs = 0:ΔX:(nx-1)*ΔX
-    ys = 0:ΔY:(ny-1)*ΔY
-    zs = 0:ΔZ:(nz-1)*ΔZ
+    nx, ny, nz = size(ct.volume)
+    xs = 0:ct.ΔX:(nx-1)*ct.ΔX
+    ys = 0:ct.ΔY:(ny-1)*ct.ΔY
+    zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
 
     # Trace rays through the voxel grid
     t = 0:spacing:1
-    drr = [sampler(ray, t, sampling_function; volume, xs, ys, zs) for ray in projector]
+    drr = [sampler(ray, t, sampling_function; ct.volume, xs, ys, zs) for ray in projector]
     return drr
 
 end
