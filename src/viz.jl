@@ -74,15 +74,15 @@ plot_detector
 """
 function plot_detector(detector::Detector)
     plane = make_plane(detector)
-    pts = plane[[1, 201, end - 200, end]]
+    pts = plane[[1, detector.height, end - detector.height + 1, end]]
     return mesh3d(
         name="Detector",
         x=[pt[1] for pt in pts],
         y=[pt[2] for pt in pts],
         z=[pt[3] for pt in pts],
-        i=[0, 1],
-        j=[1, 2],
-        k=[2, 3],
+        i=[0, 0],
+        j=[1, 3],
+        k=[3, 2],
     )
 end
 
@@ -107,7 +107,7 @@ function plot_rays(camera::Camera, detector::Detector)
             showlegend=false,
         )
     end
-    return [plot_ray(ray) for ray in get_rays(camera, detector)[1:20:201, 1:20:201]][:]
+    return [plot_ray(ray) for ray in get_rays(camera, detector)[1:20:detector.height, 1:20:detector.width]][:]
 end
 
 
