@@ -42,9 +42,9 @@ function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     ys = 0:ct.ΔY:(ny-1)*ct.ΔY
     zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
     return [
-        get_slice_x(x; vol=ct.volume, xs, ys, zs, ctkwargs...),
-        get_slice_y(y; vol=ct.volume, xs, ys, zs, ctkwargs...),
-        get_slice_z(z; vol=ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_x(x; vol=ct.volume, xs, ys, zs, ctkwargs..., showscale=false),
+        get_slice_y(y; vol=ct.volume, xs, ys, zs, ctkwargs..., showscale=false),
+        get_slice_z(z; vol=ct.volume, xs, ys, zs, ctkwargs..., showscale=true),
     ]
 end
 
@@ -112,6 +112,24 @@ end
 
 
 """
+    plot_image(drr::Matrix{T}; name::String="DRR") where {T<:Real}
+
+Plot a DRR as a 2D heatmap.
+"""
+function plot_image(drr::Matrix{T}; name::String="DRR") where {T<:Real}
+    trace = heatmap(z=drr, colorscale="Greys", name=name)
+    height, width = size(drr)
+    layout = Layout(
+        showlegend=false,
+        width=width,
+        height=height,
+        autosize=false
+    )
+    plot(trace, layout)
+end
+
+
+"""
     plot(ct::CT, camera::Camera, detector::Detector)
 
 Overload the plot function to render the projector geometry.
@@ -133,12 +151,12 @@ end
 
 
 """
-    plot_drr
+    plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{Float64}; ctkwargs...)
 
 Plot the geometry and the resulting DRR. 
 NOTE: Very slow.
 """
-function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
+function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{T}; ctkwargs...) where {T<:Real}
 
     fig = make_subplots(
         rows=1, cols=2,
@@ -162,7 +180,7 @@ function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
     end
 
     # Plot the DRR
-    p = heatmap(z=DRR(ct, detector, camera, 0.1, trilinear), colorscale="Greys")
+    p = heatmap(z=drr, colorscale="Greys")
     add_trace!(fig, p, row=1, col=2)
 
     relayout!(fig)

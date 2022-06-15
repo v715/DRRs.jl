@@ -21,7 +21,7 @@ export DRR
 include("drr.jl")
 
 # Visualization
-export plot, plot_drr
+export plot, plot_image
 include("viz.jl")
 
 end

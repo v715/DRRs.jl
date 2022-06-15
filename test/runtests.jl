@@ -27,6 +27,6 @@ using Test
 
     @info "Testing DRR visualization..."
     # @test plot(ct, camera, detector)
-    # @test plot_drr(ct, camera, detector)
+    # @test plot(ct, camera, detector, drr)
 
 end
