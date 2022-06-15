@@ -42,9 +42,9 @@ function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     ys = 0:ct.ΔY:(ny-1)*ct.ΔY
     zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
     return [
-        get_slice_x(x; vol=ct.volume, xs, ys, zs, ctkwargs...),
-        get_slice_y(y; vol=ct.volume, xs, ys, zs, ctkwargs...),
-        get_slice_z(z; vol=ct.volume, xs, ys, zs, ctkwargs...),
+        get_slice_x(x; vol=ct.volume, xs, ys, zs, ctkwargs..., showscale=false),
+        get_slice_y(y; vol=ct.volume, xs, ys, zs, ctkwargs..., showscale=false),
+        get_slice_z(z; vol=ct.volume, xs, ys, zs, ctkwargs..., showscale=true),
     ]
 end
 
