@@ -4,10 +4,10 @@ import PlotlyJS: plot
 
 
 """
-get_slice_{x,y,z}
+    get_slice_{x,y,z}
 
-    Get a slice of a CT volume along the x (coronal), y (sagittal) or z (transverse) axis.
-    The slice is plotted as an isosurface in Plotly.
+Get a slice of a CT volume along the x (coronal), y (sagittal) or z (transverse) axis. 
+The slice is plotted as an isosurface in Plotly.
 """
 function get_slice_x(i::Int64; vol, xs, ys, zs, ctkwargs...)
     X, Y, Z = mgrid([xs[i]], ys, zs)
@@ -30,10 +30,10 @@ function get_slice_z(i::Int64; vol, xs, ys, zs, ctkwargs...)
 end
 
 """
-plot_ct
+    plot_ct
 
-        Make a Plotly trace for the CT volume.
-        `ctkwargs...` is a dictionary of keyword arguments to pass to the isosurface function.
+ Make a Plotly trace for the CT volume.
+`ctkwargs...` is a dictionary of keyword arguments to pass to the isosurface function.
 """
 function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)
     # Get the coordinate spacings
@@ -50,9 +50,9 @@ end
 
 
 """
-plot_camera
+    plot_camera
 
-    Make a Plotly trace for the camera center a single point in a 3D scatterplot.
+Make a Plotly trace for the camera center a single point in a 3D scatterplot.
 """
 function plot_camera(camera::Camera)
     return scatter(
@@ -68,11 +68,11 @@ end
 
 
 """
-plot_detector
+    plot_detector
 
-    Make two traces: one for the detector plane with a 3D mesh, and another
-    for the rays emanating from the camera. The rays are created using multiple
-    3D lineplots. The rays are subsampled (every 10th ray) to reduce overhead.
+Make two traces: one for the detector plane with a 3D mesh, and another
+for the rays emanating from the camera. The rays are created using multiple
+3D lineplots. The rays are subsampled (every 10th ray) to reduce overhead.
 """
 function plot_detector(camera::Camera, detector::Detector; skips::Int64=20)
 
@@ -112,9 +112,9 @@ end
 
 
 """
-plot(ct::CT, camera::Camera, detector::Detector)
+    plot(ct::CT, camera::Camera, detector::Detector)
 
-    Overload the plot function to render the projector geometry.
+Overload the plot function to render the projector geometry.
 """
 function plot(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
     traces = [
@@ -133,10 +133,10 @@ end
 
 
 """
-plot_drr
+    plot_drr
 
-    Plot the geometry and the resulting DRR.
-    NOTE: Very slow.
+Plot the geometry and the resulting DRR. 
+NOTE: Very slow.
 """
 function plot_drr(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
 
