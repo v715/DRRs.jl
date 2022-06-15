@@ -38,21 +38,21 @@ Given a camera and detector, construct the rays eminating from the camera center
 and the detector plane which they hit.
 """
 function make_xrays(camera::Camera, detector::Detector)
+
     # Get the detector plane normal vector
     n̂ = camera.center - detector.center |> normalize
-    d = detector.center' * n̂
+    u, v, w = get_basis(n̂)
+    @assert w ≈ n̂
 
     # Construct the detector plane
-    xs = ((-detector.height÷2:1:detector.height÷2) .* detector.Δx) .+ detector.center[1]
-    ys = ((-detector.width÷2:1:detector.width÷2) * detector.Δy) .+ detector.center[2]
-    xys = product(xs, ys)
-    zs = [findz(xy..., n̂..., d) for xy in xys]
-    plane = [SVector(xy..., z) for (xy, z) in zip(xys, zs)]
+    t = (-detector.height÷2:1:detector.height÷2) .* detector.Δx
+    s = (-detector.width÷2:1:detector.width÷2) * detector.Δy
+    get_coord(u, v, coef) = (coef .* (u, v)) |> sum |> x -> x + detector.center
+    plane = [get_coord(u, v, coef) for coef in product(t, s)]
 
     # Get the rays
     rays = [Ray(camera.center, target) for target in plane]
 
     return rays
-end
 
-findz(x, y, a, b, c, d) = (d - a * x - b * y) / c
+end
