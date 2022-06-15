@@ -112,6 +112,24 @@ end
 
 
 """
+    plot_image(drr::Matrix{T}; name::String="DRR") where {T<:Real}
+
+Plot a DRR as a 2D heatmap.
+"""
+function plot_image(drr::Matrix{T}; name::String="DRR") where {T<:Real}
+    trace = heatmap(z=drr, colorscale="Greys", name=name)
+    height, width = size(drr)
+    layout = Layout(
+        showlegend=false,
+        width=width,
+        height=height,
+        autosize=false
+    )
+    plot(trace, layout)
+end
+
+
+"""
     plot(ct::CT, camera::Camera, detector::Detector)
 
 Overload the plot function to render the projector geometry.
@@ -138,7 +156,7 @@ end
 Plot the geometry and the resulting DRR. 
 NOTE: Very slow.
 """
-function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{Float64}; ctkwargs...)
+function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{T}; ctkwargs...) where {T<:Real}
 
     fig = make_subplots(
         rows=1, cols=2,
