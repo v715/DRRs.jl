@@ -134,16 +134,16 @@ end
 
 Overload the plot function to render the projector geometry.
 """
-function plot(ct::CT, camera::Camera, detector::Detector; ctkwargs...)
+function plot(ct::CT, camera::Camera, detector::Detector; axlim=[-500, 1100], ctkwargs...)
     traces = [
         plot_ct(ct; ctkwargs...)...,
         plot_camera(camera),
         plot_detector(camera, detector)...,
     ]
     layout = Layout(scene=attr(
-        xaxis=attr(range=[-500, 1100]),
-        yaxis=attr(range=[-500, 1100]),
-        zaxis=attr(range=[-500, 1100]),
+        xaxis=attr(range=axlim),
+        yaxis=attr(range=axlim),
+        zaxis=attr(range=axlim),
         aspectratio=(x=1, y=1, z=1)
     ))
     plot(traces, layout)
@@ -151,12 +151,12 @@ end
 
 
 """
-    plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{Float64}; ctkwargs...)
+    plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{Float64})
 
 Plot the geometry and the resulting DRR. 
 NOTE: Very slow.
 """
-function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{T}; ctkwargs...) where {T<:Real}
+function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{T}; axlim=[-500, 1100], ctkwargs...) where {T<:Real}
 
     fig = make_subplots(
         rows=1, cols=2,
@@ -170,9 +170,9 @@ function plot(ct::CT, camera::Camera, detector::Detector, drr::Matrix{T}; ctkwar
         plot_detector(camera, detector)...,
     ]
     layout = Layout(scene=attr(
-        xaxis=attr(range=[-500, 1100]),
-        yaxis=attr(range=[-500, 1100]),
-        zaxis=attr(range=[-500, 1100]),
+        xaxis=attr(range=axlim),
+        yaxis=attr(range=axlim),
+        zaxis=attr(range=axlim),
         aspectratio=(x=1, y=1, z=1)
     ))
     for trace in traces
