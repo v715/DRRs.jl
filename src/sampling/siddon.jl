@@ -72,7 +72,7 @@ end
 
 
 # Get the voxel characterized by two adjacent α values
-function get_weighted_voxel(m::Int64; α̲::Vector{Float64}, ct::CT; X₀::Float64=0.0, Y₀::Float64=0.0, Z₀::Float64=0.0)
+function get_weighted_voxel(m::Int64, α̲::Vector{Float64}, ct::CT; X₀::Float64=0.0, Y₀::Float64=0.0, Z₀::Float64=0.0)
     αmid = (α̲[m] + α̲[m-1]) / 2
     x1, y1, z1 = ray.origin
     x2, y2, z2 = ray.target
@@ -83,7 +83,7 @@ function get_weighted_voxel(m::Int64; α̲::Vector{Float64}, ct::CT; X₀::Float
 end
 
 
-function trace(ray::Ray, ct::CT)
+function siddon(ray::Ray, ct::CT)
     α̲ = get_merged_α(ray, ct)
     n = length(α̲)
     radiologic_path_length = 0.0
