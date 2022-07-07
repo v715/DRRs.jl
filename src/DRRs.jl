@@ -17,6 +17,9 @@ include("sampling/trilinear.jl")
 export sample
 include("sampling/sampler.jl")
 
+export siddon
+include("sampling/siddon.jl")
+
 export DRR
 include("drr.jl")
 
