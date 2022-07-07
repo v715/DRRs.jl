@@ -59,7 +59,7 @@ function get_idx_minmax(αmin::Float64, αmax::Float64, ray::Ray, ct::CT)
 end
 
 
-# Get the list of αs
+# Get the list of α's
 function get_merged_α(ray::Ray, ct::CT)
     αmin, αmax = get_α_minmax(ray, ct)
     imin, imax, jmin, jmax, kmin, kmax = get_idx_minmax(αmin, αmax, ray, ct)
@@ -82,3 +82,14 @@ function get_weighted_voxel(m::Int64; α̲::Vector{Float64}, ct::CT; X₀::Float
     return (α̲[m+1] - α̲[m]) * ct.volume[i, j, k]
 end
 
+
+function trace(ray::Ray, ct::CT)
+    α̲ = get_merged_α(ray, ct)
+    n = length(α̲)
+    radiologic_path_length = 0.0
+    for m in 1:n
+        radiologic_path_length += get_weighted_voxel(m, α̲, ct)
+    end
+    d12 = norm(ray.target - ray.origin)
+    return d12 * radiologic_path_length
+end
