@@ -5,9 +5,9 @@ using DRRs
 
 # Get the spatial coordinate of a plane, assuming the image isocenter is the origin
 # Planes are indexed from 0:n where n is the number of slices in a given direction
-X_plane(i::Int64, ct::CT; X₀::Float64=0.0) = X₀ + i * ct.ΔX
-Y_plane(j::Int64, ct::CT; Y₀::Float64=0.0) = Y₀ + j * ct.ΔY
-Z_plane(k::Int64, ct::CT; Z₀::Float64=0.0) = Z₀ + k * ct.ΔZ
+X_plane(i::Int64, ct::CT) = ct.X₀ + i * ct.ΔX
+Y_plane(j::Int64, ct::CT) = ct.Y₀ + j * ct.ΔY
+Z_plane(k::Int64, ct::CT) = ct.Z₀ + k * ct.ΔZ
 
 
 # Get the α values for each plane
@@ -72,13 +72,13 @@ end
 
 
 # Get the voxel characterized by two adjacent α values
-function get_weighted_voxel(m::Int64, α̲::Vector{Float64}, ct::CT; X₀::Float64=0.0, Y₀::Float64=0.0, Z₀::Float64=0.0)
+function get_weighted_voxel(ray::Ray, m::Int64, α̲::Vector{Float64}, ct::CT)
     αmid = (α̲[m] + α̲[m-1]) / 2
     x1, y1, z1 = ray.origin
     x2, y2, z2 = ray.target
-    i = floor((x1 + αmid * (x2 - x1) - X₀) / (ct.ΔX))
-    j = floor((y1 + αmid * (y2 - y1) - Y₀) / (ct.ΔY))
-    k = floor((z1 + αmid * (z2 - z1) - Z₀) / (ct.ΔZ))
+    i = floor((x1 + αmid * (x2 - x1) - ct.X₀) / (ct.ΔX)) + 1 |> Int
+    j = floor((y1 + αmid * (y2 - y1) - ct.Y₀) / (ct.ΔY)) + 1 |> Int
+    k = floor((z1 + αmid * (z2 - z1) - ct.Z₀) / (ct.ΔZ)) |> Int
     return (α̲[m+1] - α̲[m]) * ct.volume[i, j, k]
 end
 
