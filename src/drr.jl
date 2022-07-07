@@ -1,4 +1,4 @@
-function DRR(ct::CT, detector::Detector, camera::Camera; sampler::String, spacing::Union{Float64,Nothing}=nothing)
+function DRR(ct::CT, detector::Detector, camera::Camera; ray2pix::Symbol, spacing::Union{Float64,Nothing}=nothing)
 
     # Make the rays in the projector
     projector = make_xrays(camera, detector)
@@ -10,11 +10,11 @@ function DRR(ct::CT, detector::Detector, camera::Camera; sampler::String, spacin
     zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
 
     # Trace rays through the voxel grid
-    if sampler == "sample" || sampler == "trilinear"
+    if ray2pix == :sample || ray2pix == :trilinear
         t = 0:spacing:1
-        sampling_function = sampler == "sample" ? sample : trilinear
+        sampling_function = ray2pix == :sample ? sample : trilinear
         drr = [sampler(ray, t, sampling_function; ct.volume, xs, ys, zs) for ray in projector]
-    else if sampler == "siddon"
+    elseif ray2pix == :siddon
         drr = [siddon(ray, ct) for ray in projector]
     else
         error("Unknown sampler")
