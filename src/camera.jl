@@ -1,7 +1,7 @@
 using LinearAlgebra
 using StaticArrays
 
-import Base: product
+import Base: product, length
 
 """
     Camera
@@ -30,6 +30,11 @@ mutable struct Ray
 end
 
 trace(t::Float64; ray::Ray) = ray.origin + (ray.target - ray.origin) * t
+length(ray::Ray) = norm(ray.target - ray.origin)
+
+"""
+    CT
+"""
 
 """
     make_xrays

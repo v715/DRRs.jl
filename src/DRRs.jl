@@ -4,7 +4,7 @@ module DRRs
 export CT, read_dicom
 include("io.jl")
 
-export Camera, Detector, Ray, make_xrays, trace
+export Camera, Detector, Ray, make_xrays, trace, length
 include("camera.jl")
 
 export get_basis
