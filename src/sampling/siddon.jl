@@ -36,7 +36,7 @@ end
 
 
 # Get the first and last intersections of a ray with orthogonal planes
-function get_xidx_minmax(x1::Float64, x2::Float64, ΔX::Float64, nx::Int64, αmin::Float64, αmax::Float64)
+function get_xidx_minmax(x1::Float64, x2::Float64, ΔX::Float64, nx::Int64, αmin::Float64, αmax::Float64, ct::CT)
     if x2 - x1 >= 0
         imin = nx - (X_plane(nx, ct) - αmin * (x2 - x1) - x1) / ΔX
         imax = 1 + (x1 + αmax * (x2 - x1) - X_plane(0, ct)) / ΔX
@@ -52,9 +52,9 @@ function get_idx_minmax(αmin::Float64, αmax::Float64, ray::Ray, ct::CT)
     x1, y1, z1 = ray.origin
     x2, y2, z2 = ray.target
     nx, ny, nz = size(ct.volume)
-    imin, imax = get_xidx_minmax(x1, x2, ct.ΔX, nx, αmin, αmax)
-    jmin, jmax = get_xidx_minmax(y1, y2, ct.ΔY, ny, αmin, αmax)
-    kmin, kmax = get_xidx_minmax(z1, z2, ct.ΔZ, nz, αmin, αmax)
+    imin, imax = get_xidx_minmax(x1, x2, ct.ΔX, nx, αmin, αmax, ct)
+    jmin, jmax = get_xidx_minmax(y1, y2, ct.ΔY, ny, αmin, αmax, ct)
+    kmin, kmax = get_xidx_minmax(z1, z2, ct.ΔZ, nz, αmin, αmax, ct)
     return imin, imax, jmin, jmax, kmin, kmax
 end
 
