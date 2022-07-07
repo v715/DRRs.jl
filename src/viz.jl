@@ -32,7 +32,7 @@ end
 """
     plot_ct
 
- Make a Plotly trace for the CT volume.
+Make a Plotly trace for the CT volume.
 `ctkwargs...` is a dictionary of keyword arguments to pass to the isosurface function.
 """
 function plot_ct(ct::CT; x::Int64=256, y::Int64=256, z::Int64=66, ctkwargs...)

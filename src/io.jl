@@ -2,10 +2,13 @@ using DICOM
 
 
 struct CT
-    volume::Array{T,3} where {T<:Real}
-    ΔX::Float64
-    ΔY::Float64
-    ΔZ::Float64
+    volume::Array{T,3} where {T<:Real}  # 3D image volume
+    ΔX::Float64                         # X-direction spacing
+    ΔY::Float64                         # Y-direction spacing
+    ΔZ::Float64                         # Z-direction spacing
+    X₀::Float64                         # X-coordinate isocenter
+    Y₀::Float64                         # Y-coordinate isocenter
+    Z₀::Float64                         # Z-coordinate isocenter
 end
 
 
@@ -31,6 +34,11 @@ function read_dicom(path::String)
     ΔZ = diff(Zs)
     ΔZ = all(z ≈ ΔZ[1] for z in ΔZ) ? ΔZ[1] : ΔZ
 
-    return CT(volume, ΔX, ΔY, ΔZ)
+    # Get the origin of the volume (image coordinates)
+    # For now, hard-code the origin to be the center of the volume
+    # TODO: Make this settable
+    X₀, Y₀, Z₀ = 0.0, 0.0, 0.0
+
+    return CT(volume, ΔX, ΔY, ΔZ, X₀, Y₀, Z₀)
 
 end
