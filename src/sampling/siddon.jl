@@ -87,7 +87,7 @@ function siddon(ray::Ray, ct::CT)
     α̲ = get_merged_α(ray, ct)
     n = length(α̲)
     radiologic_path_length = 0.0
-    for m in 1:n
+    for m in 2:n
         radiologic_path_length += get_weighted_voxel(m, α̲, ct)
     end
     d12 = norm(ray.target - ray.origin)
