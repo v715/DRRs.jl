@@ -14,29 +14,17 @@ struct CTGPU
 end
 
 
-struct CameraGPU
-    center::CuArray{Float32,1}
-end
-
-
-struct DetectorGPU
-    center::CuArray{Float32,1}
-    height::Int64
-    width::Int64
-    Δx::Float32
-    Δy::Float32
-end
-
 
 struct RayGPU
     origin::CuArray{Float32,1}
     target::CuArray{Float32,1}
 end
+trace(t::Float32; ray::RayGPU) = ray.origin + (ray.target - ray.origin) * t
 
 
 # Define CPU -> GPU struct conversion functions
 gpu(ct::CT) = CTGPU(cu(ct.volume), ct.ΔX, ct.ΔY, ct.ΔZ, ct.X₀, ct.Y₀, ct.Z₀)
-gpu(camera::Camera) = CameraGPU(cu(camera.center))
-gpu(detector::Detector) = DetectorGPU(cu(detector.center), detector.height, detector.width, detector.Δx, detector.Δy)
 gpu(ray::Ray) = RayGPU(cu(ray.origin), cu(ray.target))
 
+# Add converter for the rays to trace
+gpu(projector::Matrix{Ray}) = [gpu(ray) for ray in projector]
