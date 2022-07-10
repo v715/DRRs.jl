@@ -10,6 +10,10 @@ include("camera.jl")
 export get_basis
 include("utils.jl")
 
+# GPU support
+export CTGPU, CameraGPU, DetectorGPU, RayGPU, gpu
+include("gpu.jl")
+
 # Sampling
 export make_coordinate_matrix, make_inverse_coordinate_matrix, trilinear
 include("sampling/trilinear.jl")
