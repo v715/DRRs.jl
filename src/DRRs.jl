@@ -7,7 +7,7 @@ include("io.jl")
 export Camera, Detector, Ray, make_xrays, trace, length
 include("camera.jl")
 
-export get_basis
+export get_basis, adjsum
 include("utils.jl")
 
 # GPU support

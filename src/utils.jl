@@ -22,3 +22,15 @@ function get_noncollinear_vector(w)
     t[i] = 1
     return t
 end
+
+
+"""
+    adjsum
+
+Add adjacent pairs of elements in an array. Summation analog of `diff`.
+"""
+function adjsum(arr)
+    arr1 = @view arr[begin:end-1]
+    arr2 = @view arr[begin+1:end]
+    arr1 + arr2
+end
