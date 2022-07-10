@@ -1,29 +1,44 @@
-function DRR(ct::CT, detector::Detector, camera::Camera; ray2pix::Symbol, spacing::Union{Float64,Nothing}=nothing)
+using Base.Threads
 
-    # Make the rays in the projector
-    projector = make_xrays(camera, detector)
 
-    # Trace rays through the voxel grid
-    if ray2pix == :sample || ray2pix == :trilinear
-        t = 0:spacing:1
-        nx, ny, nz = size(ct.volume)
-        xs = 0:ct.ΔX:(nx-1)*ct.ΔX
-        ys = 0:ct.ΔY:(ny-1)*ct.ΔY
-        zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
-        sampling_function = ray2pix == :sample ? sample : trilinear
-        drr = [sampler(ray, t, sampling_function; ct.volume, xs, ys, zs) for ray in projector]
-    elseif ray2pix == :siddon
-        drr = [siddon(ray, ct) for ray in projector]
+function sampler(ct::CT, camera::Camera, detector::Detector; ray2pix::Symbol, spacing::Float64)
+
+    # Parse the sampling function specification
+    if ray2pix == :sample
+        sampling_function = sample
+    elseif ray2pix == :trilinear
+        sampling_function = trilinear
     else
-        error("Unknown sampling function: ", ray2pix)
+        error("Unkown ray2pix method: :$ray2pix. Must be in {:sample, :trilinear}.")
+    end
+
+    # Get the model parameters
+    t = 0.0:spacing:1.0
+    nx, ny, nz = size(ct.volume)
+    xs = 0:ct.ΔX:(nx-1)*ct.ΔX
+    ys = 0:ct.ΔY:(ny-1)*ct.ΔY
+    zs = 0:ct.ΔZ:(nz-1)*ct.ΔZ
+
+    # Make the DRR
+    projector = make_xrays(camera, detector)
+    drr = zeros(Float64, detector.height, detector.width)
+
+    @threads for i in eachindex(projector)
+        @inbounds ray = projector[i]
+        out = trace.(t; ray) .|> xyz -> sampling_function(xyz...; ct.volume, xs, ys, zs)
+        intensity = sum(out) / length(out)  # Normalize by the number of samples
+        @inbounds drr[i] = intensity
     end
 
     return drr
-
 end
 
 
-function sampler(ray, t, sampling_function; volume, xs, ys, zs)
-    out = trace.(t; ray) .|> xyz -> sampling_function(xyz...; volume, xs, ys, zs)
-    return sum(out) / length(out)
+function siddon(ct::CT, camera::Camera, detector::Detector)
+    projector = make_xrays(camera, detector)
+    drr = zeros(Float64, detector.height, detector.width)
+    @threads for i in eachindex(projector)
+        @inbounds drr[i] = siddon(projector[i], ct)
+    end
+    return drr
 end

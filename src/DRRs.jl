@@ -20,7 +20,7 @@ include("sampling/sampler.jl")
 export siddon
 include("sampling/siddon.jl")
 
-export DRR
+export sampler, siddon
 include("drr.jl")
 
 # Visualization
