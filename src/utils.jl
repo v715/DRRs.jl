@@ -22,3 +22,11 @@ function get_noncollinear_vector(w)
     t[i] = 1
     return t
 end
+
+"""
+    adjsum
+
+Compute the sum of adjacent elements in an array.
+Analog of the diff operator.
+"""
+@views adjsum(a) = a[begin:end-1] + a[begin+1:end]
