@@ -79,20 +79,20 @@ function (sid::Siddon)(volume)
     αmin, αmax, imin, imax, jmin, jmax, kmin, kmax = initialize(sid)
     αcurr = αmin
 
-    steps = get_α(imin, jmin, kmin; sid)
-    αnext, idx = findmin(steps)
+    steps = get_α(imin, jmin, kmin; sid)  # Get potential next steps in xyz planes
+    αnext, idx = findmin(steps)  # Find the smallest step (i.e., the next plane)
 
     αmid = (αcurr + αnext) / 2
-    voxel = get_voxel_idx(αmid; sid)
+    voxel = get_voxel_idx(αmid; sid)  # Get the voxel at the midpoint between αcurr and αnext
 
     step_len = αnext - αcurr
     d12 = @views step_len * volume[voxel...]
+    αcurr = αnext
 
     # Loop over all voxels that the ray passes through
-    αcurr = αnext
-    ⪅(a, b) = (a < b) && !(a ≈ b)  # a is less than b, but not approximately equal to it
-    while αcurr ⪅ αmax
-        voxel[idx] += update_ijk[idx]  # 
+    ⪅(a, b) = (a < b) && !(a ≈ b)  # Test if a is less than b, but not approximately equal to b
+    while αcurr ⪅ αmax             # Necessary because floating point errors means that αcurr ≈ αmax at some point 
+        voxel[idx] += update_ijk[idx]
         steps[idx] += update_α[idx]
         αnext, idx = findmin(steps)
         step_len = αnext - αcurr
