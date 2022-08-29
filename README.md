@@ -2,9 +2,10 @@
 
 [![Build Status](https://github.com/v715/DRRs.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/v715/DRRs.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-**NOTE: THIS PACKAGE IS NO LONGER MAINTAINED.**
-
 *Parallelized, GPU-accelerated, and differentiable digitally reconstructed radiographs in Julia.*
+
+**NOTE: THIS PACKAGE IS NO LONGER MAINTAINED.**
+**For similar functionality, use `DiffDRR` instead (https://github.com/v715/DiffDRR).**
 
 ⚠️ `DDRs.jl` was an experimental digitally reconstructed radiograph (DRR) generator in Julia. It's aim was to be a GPU-accelerated, auto-differentiable renderer (a la [RayTracer.jl](https://github.com/avik-pal/RayTracer.jl)) for medical images, but challenges using `CUDA.jl` and `Zygote.jl` made it difficult to reach a minimal viable prototype.
 
