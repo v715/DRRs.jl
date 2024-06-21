@@ -1,90 +1,120 @@
-using DRRs
-
-# Get the spatial coordinate of a plane, assuming the image isocenter is the origin
-# Planes are indexed from 1:(n+1) where n is the number of voxels in a given direction
-X_plane(i::Int64, ct::CT) = ct.X₀ + (i - 1) * ct.ΔX
-Y_plane(j::Int64, ct::CT) = ct.Y₀ + (j - 1) * ct.ΔY
-Z_plane(k::Int64, ct::CT) = ct.Z₀ + (k - 1) * ct.ΔZ
-
-
-# Get the α values for a plane
-get_αx(i::Int64; ray::Ray, ct::CT) = (X_plane(i, ct) - ray.origin[1]) / (ray.target[1] - ray.origin[1])
-get_αy(j::Int64; ray::Ray, ct::CT) = (Y_plane(j, ct) - ray.origin[2]) / (ray.target[2] - ray.origin[2])
-get_αz(k::Int64; ray::Ray, ct::CT) = (Z_plane(k, ct) - ray.origin[3]) / (ray.target[3] - ray.origin[3])
-
-function get_α(i::Int64, j::Int64, k::Int64; ray::Ray, ct::CT)
-    αx = get_αx(i; ray, ct)
-    αy = get_αy(j; ray, ct)
-    αz = get_αz(k; ray, ct)
-    return αx, αy, αz
+struct Siddon{ArrFloat,ArrInt}
+    origin::ArrFloat
+    target::ArrFloat
+    spacing::ArrFloat
+    isocenter::ArrFloat
+    dims::ArrInt
 end
 
 
-# Get the min/max α values for a ray
-function get_α_minmax(ray::Ray, ct::CT)
-    nx, ny, nz = size(ct.volume) .+ 1  # Number of x,y,z planes
-    αx0, αy0, αz0 = get_α(1, 1, 1; ray, ct)
-    αx1, αy1, αz1 = get_α(nx, ny, nz; ray, ct)
-    αmin = max(0, min(αx0, αx1), min(αy0, αy1), min(αz0, αz1))
-    αmax = min(1, max(αx0, αx1), max(αy0, αy1), max(αz0, αz1))
-    return αmin, αmax
+function get_α(i::Int, j::Int, k::Int; sid::Siddon)
+    planes = [i, j, k]
+    return @. (sid.isocenter + planes * sid.spacing - sid.origin) / (sid.target - sid.origin)
 end
 
 
-# Get the first and last intersections of a ray with orthogonal planes
-function get_idx_minmax(lookup::Function, p1::Float64, p2::Float64, Δ::Float64, n::Int64; αmin::Float64, αmax::Float64, ct::CT)
-    if p2 - p1 ≥ 0
-        pmin = n - (lookup(n, ct) - αmin * (p2 - p1) - p1) / Δ |> ceil |> Int
-        pmax = 1 + (p1 + αmax * (p2 - p1) - lookup(1, ct)) / Δ |> floor |> Int
+function get_α_minmax(sid::Siddon)
+    αx0, αy0, αz0 = get_α(0, 0, 0; sid)
+    αx1, αy1, αz1 = (sid.dims .- 1) |> nxyz -> get_α(nxyz...; sid)
+    αxmin, αxmax = minmax(αx0, αx1)
+    αymin, αymax = minmax(αy0, αy1)
+    αzmin, αzmax = minmax(αz0, αz1)
+    αmin = max(αxmin, αymin, αzmin)
+    αmax = min(αxmax, αymax, αzmax)
+    return αxmin, αxmax, αymin, αymax, αzmin, αzmax, αmin, αmax
+end
+
+
+function get_φ(α::Float64; sid::Siddon)
+    pxyz = @. sid.origin + α * (sid.target - sid.origin)  # Trace the ray
+    return @. (pxyz - sid.isocenter) / sid.spacing
+end
+
+
+function get_idx_minmax(
+    αmin::Float64, αmax::Float64, αxmin::Float64, αxmax::Float64,
+    ixmin::Float64, ixmax::Float64, p1::Float64, p2::Float64, nx::Int64
+)
+    if p1 ≤ p2
+        imin = αmin == αxmin ? 1 : trunc(Int, ixmin + 1)
+        imax = αmax == αxmax ? nx - 1 : trunc(Int, ixmax)
     else
-        pmin = n - (lookup(n, ct) - αmax * (p2 - p1) - p1) / Δ |> ceil |> Int
-        pmax = 1 + (p1 + αmin * (p2 - p1) - lookup(1, ct)) / Δ |> floor |> Int
+        imin = αmax == αxmax ? 1 : trunc(Int, ixmax + 1)
+        imax = αmin == αxmin ? nx - 2 : trunc(Int, ixmin)
     end
-    return pmin, pmax
-end
-
-function get_idx_minmax(αmin::Float64, αmax::Float64, ray::Ray, ct::CT)
-    x1, y1, z1 = ray.origin
-    x2, y2, z2 = ray.target
-    nx, ny, nz = size(ct.volume)
-    imin, imax = get_idx_minmax(X_plane, x1, x2, ct.ΔX, nx; αmin, αmax, ct)
-    jmin, jmax = get_idx_minmax(Y_plane, y1, y2, ct.ΔY, ny; αmin, αmax, ct)
-    kmin, kmax = get_idx_minmax(Z_plane, z1, z2, ct.ΔZ, nz; αmin, αmax, ct)
-    return imin, imax, jmin, jmax, kmin, kmax
+    return imin, imax
 end
 
 
-# Get the merged list of α's
-function get_merged_αs(ray::Ray, ct::CT)
-    αmin, αmax = get_α_minmax(ray, ct)
-    imin, imax, jmin, jmax, kmin, kmax = get_idx_minmax(αmin, αmax, ray, ct)
-    α̲x = get_αx.(imin:imax; ray, ct)
-    α̲y = get_αy.(jmin:jmax; ray, ct)
-    α̲z = get_αz.(kmin:kmax; ray, ct)
-    α̲ = vcat(α̲x, α̲y, α̲z) |> sort
-    return α̲
+function initialize(sid::Siddon)
+    αxmin, αxmax, αymin, αymax, αzmin, αzmax, αmin, αmax = get_α_minmax(sid)
+    ixmin, jxmin, kxmin = get_φ(αmin; sid)
+    ixmax, jxmax, kxmax = get_φ(αmax; sid)
+    imin, imax = get_idx_minmax(αmin, αmax, αxmin, αxmax, ixmin, ixmax, sid.origin[1], sid.target[1], sid.dims[1])
+    jmin, jmax = get_idx_minmax(αmin, αmax, αymin, αymax, jxmin, jxmax, sid.origin[2], sid.target[2], sid.dims[2])
+    kmin, kmax = get_idx_minmax(αmin, αmax, αzmin, αzmax, kxmin, kxmax, sid.origin[3], sid.target[3], sid.dims[3])
+    return αmin, αmax, imin, imax, jmin, jmax, kmin, kmax
 end
 
 
-# Get the voxel characterized by two adjacent α values
-function get_weighted_voxel(ray::Ray, m::Int64, α̲::Vector{Float64}, ct::CT)
-    αmid = (α̲[m] + α̲[m-1]) / 2
-    x1, y1, z1 = ray.origin
-    x2, y2, z2 = ray.target
-    i = 1 + (x1 + αmid * (x2 - x1) - X_plane(1, ct)) / ct.ΔX |> floor |> Int
-    j = 1 + (y1 + αmid * (y2 - y1) - Y_plane(1, ct)) / ct.ΔY |> floor |> Int
-    k = 1 + (z1 + αmid * (z2 - z1) - Z_plane(1, ct)) / ct.ΔZ |> floor |> Int
-    return (α̲[m] - α̲[m-1]) * ct.volume[i, j, k]
+# TODO: When to convert to CartesianIndex?
+function get_voxel_idx(α::Float64; sid::Siddon)
+    xidxs = get_φ(α; sid)
+    idxs = trunc.(Int, xidxs) .+ 1
+    return idxs
+    # return CartesianIndex(idxs...)
 end
 
 
-# Main function to get pixel value from ray
+function (sid::Siddon)(volume)
+
+    # Get update conditions
+    iu = sid.origin[1] ≤ sid.target[1] ? 1 : -1
+    ju = sid.origin[2] ≤ sid.target[2] ? 1 : -1
+    ku = sid.origin[3] ≤ sid.target[3] ? 1 : -1
+    update_ijk = [iu, ju, ku]
+    update_α = @. sid.spacing / abs(sid.target - sid.origin)
+
+    # Initialize the loop
+    αmin, αmax, imin, imax, jmin, jmax, kmin, kmax = initialize(sid)
+    αcurr = αmin
+
+    steps = get_α(imin, jmin, kmin; sid)  # Get potential next steps in xyz planes
+    αnext, idx = findmin(steps)  # Find the smallest step (i.e., the next plane)
+
+    αmid = (αcurr + αnext) / 2
+    voxel = get_voxel_idx(αmid; sid)  # Get the voxel at the midpoint between αcurr and αnext
+
+    step_len = αnext - αcurr
+    d12 = @views step_len * volume[voxel...]
+    αcurr = αnext
+
+    # Loop over all voxels that the ray passes through
+    ⪅(a, b) = (a < b) && !(a ≈ b)  # Test if a is less than b, but not approximately equal to b
+    while αcurr ⪅ αmax             # Necessary because floating point errors means that αcurr ≈ αmax at some point 
+        voxel[idx] += update_ijk[idx]
+        steps[idx] += update_α[idx]
+        αnext, idx = findmin(steps)
+        step_len = αnext - αcurr
+        d12 += @views step_len * volume[voxel...]
+        αcurr = αnext
+    end
+    return d12
+end
+
+
 function siddon(ray::Ray, ct::CT)
-    α̲ = get_merged_αs(ray, ct)
-    n = length(α̲)
-    radiologic_path_length = 0.0
-    for m in 2:n
-        radiologic_path_length += get_weighted_voxel(ray, m, α̲, ct)
-    end
+    spacing = [ct.ΔX, ct.ΔY, ct.ΔZ]
+    isocenter = [ct.X₀, ct.Y₀, ct.Z₀]
+    dims = size(ct.volume) .+ 1
+    sid = Siddon(
+        Array(ray.origin),
+        Array(ray.target),
+        spacing,
+        isocenter,
+        dims
+    )
+    volume = ct.volume[end:-1:1, :, :] |> vol -> permutedims(vol, (2, 1, 3))  # Reverse the rows and swap rows/cols
+    radiologic_path_length = sid(volume)
     return length(ray) * radiologic_path_length
 end
