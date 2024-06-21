@@ -1,5 +1,3 @@
-using DRRs
-
 # Get the spatial coordinate of a plane, assuming the image isocenter is the origin
 # Planes are indexed from 1:(n+1) where n is the number of voxels in a given direction
 X_plane(i::Int64, ct::CT) = ct.X₀ + (i - 1) * ct.ΔX
@@ -71,9 +69,9 @@ function get_weighted_voxel(ray::Ray, m::Int64, α̲::Vector{Float64}, ct::CT)
     αmid = (α̲[m] + α̲[m-1]) / 2
     x1, y1, z1 = ray.origin
     x2, y2, z2 = ray.target
-    i = 1 + (x1 + αmid * (x2 - x1) - X_plane(1, ct)) / ct.ΔX |> floor |> Int
-    j = 1 + (y1 + αmid * (y2 - y1) - Y_plane(1, ct)) / ct.ΔY |> floor |> Int
-    k = 1 + (z1 + αmid * (z2 - z1) - Z_plane(1, ct)) / ct.ΔZ |> floor |> Int
+    i = 1 + (x1 + αmid * (x2 - x1) - ct.X₀) / ct.ΔX |> floor |> Int
+    j = 1 + (y1 + αmid * (y2 - y1) - ct.Y₀) / ct.ΔY |> floor |> Int
+    k = 1 + (z1 + αmid * (z2 - z1) - ct.Z₀) / ct.ΔZ |> floor |> Int
     return (α̲[m] - α̲[m-1]) * ct.volume[i, j, k]
 end
 

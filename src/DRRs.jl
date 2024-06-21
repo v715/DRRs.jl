@@ -7,8 +7,12 @@ include("io.jl")
 export Camera, Detector, Ray, make_xrays, trace, length
 include("camera.jl")
 
-export get_basis
+export get_basis, adjsum
 include("utils.jl")
+
+# GPU support
+export CTGPU, CameraGPU, DetectorGPU, RayGPU, gpu
+include("gpu.jl")
 
 # Sampling
 export make_coordinate_matrix, make_inverse_coordinate_matrix, trilinear
@@ -20,7 +24,7 @@ include("sampling/sampler.jl")
 export siddon
 include("sampling/siddon.jl")
 
-export DRR
+export sampler, siddon
 include("drr.jl")
 
 # Visualization

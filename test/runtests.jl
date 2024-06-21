@@ -20,11 +20,11 @@ using Test
     @test inv(M) ≈ Minv
 
     @info "Testing DRR generator..."
-    drr = DRR(ct, detector, camera; ray2pix=:trilinear, spacing=0.1)
+    drr = sampler(ct, camera, detector; ray2pix=:trilinear, spacing=0.1)
     @test size(drr) == (101, 101)
-    drr = DRR(ct, detector, camera; ray2pix=:sample, spacing=0.1)
+    drr = sampler(ct, camera, detector; ray2pix=:sample, spacing=0.1)
     @test size(drr) == (101, 101)
-    drr = DRR(ct, detector, camera, ray2pix=:siddon)
+    drr = siddon(ct, camera, detector)
 
     @info "Testing DRR visualization..."
     # @test plot(ct, camera, detector)
